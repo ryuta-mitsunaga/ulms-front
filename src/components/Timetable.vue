@@ -1,17 +1,35 @@
 <template>
   <div>
+    {{ dateDataList[0].year }}
+    <div class="d-flex justify-content-between">
+      <div>
+        <i @click="changeWeek(true)" class="bi bi-caret-left-fill pointer"></i>
+      </div>
+
+      <div>
+        {{ dateDataStringArray[0] }} ~
+        {{ dateDataStringArray[6] }}
+      </div>
+      <div>
+        <i @click="changeWeek()" class="bi bi-caret-right-fill pointer"></i>
+      </div>
+    </div>
     <table class="table table-bordered">
       <thead class="table-light">
         <tr>
           <th />
-          <th v-for="week in weeks" scope="col">{{ week }}</th>
+          <th v-for="dateDataString in dateDataStringArray" scope="col">{{ dateDataString }}</th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="period in periods" :key="period">
-          <td style="width: 10%">{{ period + '限目' }}</td>
-          <td class="pointer table-cell" v-for="week in weeks" @click="openSelectLectureModal(week, period)">
-            {{ lectureForTimetable[week][period] }}
+          <td style="width: 10%">{{ period + '限' }}</td>
+          <td
+            class="pointer table-cell"
+            v-for="(dateData, i) in dateDataList"
+            @click="openSelectLectureModal(dateData, period)"
+          >
+            {{ lectureForTimetable[enWeeks[i]][period] }}
           </td>
         </tr>
       </tbody>
@@ -19,8 +37,10 @@
   </div>
   <SelectLectureModal
     ref="selectLectureModal"
-    :week="selectingWeek"
+    v-if="selectingDateData"
+    :week-date="selectingDateData"
     :period="selectingPeriod"
+    :lecture-list="lectureList"
     @select-lecture="setLecture"
   />
 </template>
@@ -28,68 +48,142 @@
 <script setup lang="ts">
 import { Modal } from 'bootstrap';
 import SelectLectureModal from './modals/SelectLectureModal.vue';
-import { ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { getJpNameOfWeek } from '../utils/getJpNameOfWeek';
+import { useLectureList } from '../composables/useLectureList';
+import { LectureListResponse } from '../apis/LectureRepository';
+import { mmdd, toMMDD } from '../utils/toDateString';
+import { getModalElement } from '../utils/modal';
 
-const weeks: Week[] = ['月', '火', '水', '木', '金'];
+const enWeeks: Week[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
+
 const periods = 5;
 
 const lectureForTimetable: { [Key in Week]: { [Key in number]: string } } = {
-  月: {
-    1: '経済基礎演習Ⅰ',
-    2: '経済基礎演習Ⅱ',
-    3: 'ミクロ経済学',
-    4: 'マクロ経済学',
-    5: '経済学のための数学',
+  mon: {
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
   },
-  火: {
-    1: 'データ処理入門',
-    2: '経済専門演習Ⅰ',
-    3: '経済専門演習Ⅱ',
-    4: '経済専門演習Ⅲ',
-    5: '経済専門演習Ⅳ',
+  tue: {
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
   },
-  水: {
-    1: 'ミクロ経済学',
-    2: 'マクロ経済学',
-    3: '経済学のための数学',
-    4: 'データ処理入門',
-    5: '現代経済入門',
+  wed: {
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
   },
-  木: {
-    1: '西洋経済史入門',
-    2: '日本経済史入門',
-    3: '経済思想入門',
-    4: '経済統計入門',
-    5: '国際経済入門',
+  thu: {
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
   },
-  金: {
-    1: 'ミクロ経済学特論',
-    2: 'マクロ経済学特論',
+  fri: {
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
+  },
+  sat: {
+    1: '',
+    2: '',
+    3: '',
+    4: '',
+    5: '',
+  },
+  sun: {
+    1: '',
+    2: '',
     3: '',
     4: '',
     5: '',
   },
 };
 
-const getModalElement = (modalId: string) => document.querySelector<Element>(`div#${modalId}`);
+const selectLectureModal = ref<Modal | null>(null);
 
-const selectingWeek = ref<Week>('月');
-const selectingPeriod = ref<number>(1);
+const setSelectLectureModal = () => {
+  const modalElement = getModalElement('selectLectureModal');
 
-const openSelectLectureModal = (week: Week, period: number) => {
-  selectingWeek.value = week;
-  selectingPeriod.value = period;
+  if (!modalElement) return;
 
-  const modalELement = getModalElement('selectLectureModal');
-
-  if (!modalELement) return;
-
-  const selectLectureModal = new Modal(modalELement);
-  selectLectureModal.show();
+  selectLectureModal.value = new Modal(modalElement);
 };
 
-const setLecture = (lecture: string) => {
+const selectingDateData = ref<DateData | null>(null);
+const selectingPeriod = ref<number>(1);
+const lectureList = ref<LectureListResponse>([]);
+
+const openSelectLectureModal = async (dateData: DateData, period: number) => {
+  selectingDateData.value = dateData;
+  selectingPeriod.value = period;
+
+  const composable = useLectureList();
+  await composable.setLectureList();
+
+  console.log(dateData, period);
+
+  lectureList.value = composable.lectureList.value;
+
+  setSelectLectureModal();
+
+  selectLectureModal.value?.show();
+};
+
+const setLecture = (lecture: Lecture) => {
   console.log(lecture);
+};
+
+const currentMon = ref(0);
+
+/** 現在の週の月曜日から金曜日までの日付を取得する */
+const dateDataList = computed(() => {
+  const dateData: DateData[] = [];
+
+  for (let i = 0; i < 7; i++) {
+    const date = new Date();
+
+    // 日付を取得
+    date.setDate(date.getDate() - date.getDay() + i + 1 + currentMon.value);
+
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+
+    const jpWeek = getJpNameOfWeek(date);
+    date.setDate(date.getDate() + 1);
+
+    dateData.push({
+      year,
+      month,
+      day,
+      jpWeek,
+    });
+  }
+
+  return dateData;
+});
+
+/** 日付の文字列リスト */
+const dateDataStringArray = computed(() => dateDataList.value.map(toMMDD));
+
+const changeWeek = (isBack: boolean = false) => {
+  if (isBack) {
+    currentMon.value -= 7;
+  } else {
+    currentMon.value += 7;
+  }
 };
 </script>
 

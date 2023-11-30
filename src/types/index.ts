@@ -1,1 +1,8 @@
-type Week = '月' | '火' | '水' | '木' | '金';
+type Week = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
+
+type DateData = {
+  year: number;
+  month: number;
+  day: number;
+  jpWeek: string;
+};

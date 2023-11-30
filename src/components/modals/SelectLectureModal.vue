@@ -1,62 +1,60 @@
 <template>
   <div>
-    <DefaultModal :title="`講義選択 (${week}曜日 ${period}限)`" modal-id="selectLectureModal">
+    <DefaultModal :title="title" modal-id="selectLectureModal" :is-show-footer="!!selectingLecture" @close="close">
       <template v-slot:body>
-        <table class="table text-start">
-          <thead>
-            <tr>
-              <th scope="col">講義名</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="requiredLecture in requiredLectures" :key="requiredLecture">
-              <td @click="selectLecture(requiredLecture)">
-                {{ requiredLecture }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <LectureDetail v-if="selectingLecture" :lecture="selectingLecture" />
+
+        <div v-else class="table text-start">
+          <div v-for="lecture in lectureList" :key="lecture.id">
+            <div class="d-flex justify-content-between align-items-center">
+              <div>{{ lecture.title }}</div>
+              <div>
+                <button class="btn btn-primary btn-sm" @click="showDetail(lecture)">詳細</button>
+                <button class="ms-1 btn btn-success btn-sm" data-bs-dismiss="modal">登録</button>
+              </div>
+            </div>
+            <hr />
+          </div>
+        </div>
+      </template>
+      <template v-slot:footer>
+        <button class="btn btn-secondary" @click="selectingLecture = null">戻る</button>
       </template>
     </DefaultModal>
+    <LectureDetailModal :lecture="selectingLecture" />
   </div>
 </template>
 
 <script setup lang="ts">
 import DefaultModal from './DefaultModal.vue';
+import { Lecture, LectureListResponse } from '../../apis/LectureRepository';
+import { toMMDD } from '../../utils/toDateString';
+import { computed, ref } from 'vue';
+import LectureDetail from '../LectureDetail.vue';
 
-defineProps<{
-  week: Week;
+const props = defineProps<{
+  weekDate: DateData;
   period: number;
+  lectureList: LectureListResponse;
 }>();
+
+const showDetail = (lecture: Lecture) => {
+  selectingLecture.value = lecture;
+};
+
+const title = computed(() => selectingLecture.value?.title ?? `${toMMDD(props.weekDate)} ${props.period}限`);
 
 const emit = defineEmits(['selectLecture']);
 
-const requiredLectures = [
-  '経済基礎演習Ⅰ',
-  '経済基礎演習Ⅱ',
-  'ミクロ経済学',
-  'マクロ経済学',
-  '経済学のための数学',
-  'データ処理入門',
-  '経済専門演習Ⅰ',
-  '経済専門演習Ⅱ',
-  '経済専門演習Ⅲ',
-  '経済専門演習Ⅳ',
-  'ミクロ経済学',
-  'マクロ経済学',
-  '経済学のための数学',
-  'データ処理入門',
-  '現代経済入門',
-  '西洋経済史入門',
-  '日本経済史入門',
-  '経済思想入門',
-  '経済統計入門',
-  '国際経済入門',
-  'ミクロ経済学特論',
-  'マクロ経済学特論',
-];
+const selectingLecture = ref<Lecture | null>(null);
 
-const selectLecture = (lecture: string) => {
-  emit('selectLecture', lecture);
+const close = () => {
+  selectingLecture.value = null;
 };
 </script>
+
+<style scoped>
+.pointer:hover {
+  background-color: #f8f9fa;
+}
+</style>
