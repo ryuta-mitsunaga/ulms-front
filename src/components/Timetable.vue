@@ -26,10 +26,10 @@
           <td style="width: 10%">{{ period + '限' }}</td>
           <td
             class="pointer table-cell"
-            v-for="(dateData, i) in dateDataList"
+            v-for="dateData in dateDataList"
             @click="openSelectLectureModal(dateData, period)"
           >
-            {{ lectureForTimetable[enWeeks[i]][period] }}
+            {{ displayLecture(dateData, period) }}
           </td>
         </tr>
       </tbody>
@@ -41,75 +41,21 @@
     :week-date="selectingDateData"
     :period="selectingPeriod"
     :lecture-list="lectureList"
-    @select-lecture="setLecture"
+    @registered="setLectureListForStudent"
   />
 </template>
 
 <script setup lang="ts">
 import { Modal } from 'bootstrap';
 import SelectLectureModal from './modals/SelectLectureModal.vue';
-import { computed, nextTick, onMounted, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { getJpNameOfWeek } from '../utils/getJpNameOfWeek';
 import { useLectureList } from '../composables/useLectureList';
-import { LectureListResponse } from '../apis/LectureRepository';
-import { mmdd, toMMDD } from '../utils/toDateString';
+import LectureRepository, { LectureListResponse, StudentLectureListResponse } from '../apis/LectureRepository';
+import { toMMDD } from '../utils/toDateString';
 import { getModalElement } from '../utils/modal';
 
-const enWeeks: Week[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
-
 const periods = 5;
-
-const lectureForTimetable: { [Key in Week]: { [Key in number]: string } } = {
-  mon: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-  tue: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-  wed: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-  thu: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-  fri: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-  sat: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-  sun: {
-    1: '',
-    2: '',
-    3: '',
-    4: '',
-    5: '',
-  },
-};
 
 const selectLectureModal = ref<Modal | null>(null);
 
@@ -132,17 +78,11 @@ const openSelectLectureModal = async (dateData: DateData, period: number) => {
   const composable = useLectureList();
   await composable.setLectureList();
 
-  console.log(dateData, period);
-
   lectureList.value = composable.lectureList.value;
 
   setSelectLectureModal();
 
   selectLectureModal.value?.show();
-};
-
-const setLecture = (lecture: Lecture) => {
-  console.log(lecture);
 };
 
 const currentMon = ref(0);
@@ -160,14 +100,15 @@ const dateDataList = computed(() => {
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
     const day = date.getDate();
+    const dayOfWeek = date.getDay();
 
     const jpWeek = getJpNameOfWeek(date);
-    date.setDate(date.getDate() + 1);
 
     dateData.push({
       year,
       month,
       day,
+      dayOfWeek,
       jpWeek,
     });
   }
@@ -184,6 +125,22 @@ const changeWeek = (isBack: boolean = false) => {
   } else {
     currentMon.value += 7;
   }
+};
+
+/** 生徒が登録した講義リスト */
+const lectureListForStudent = ref<StudentLectureListResponse>([]);
+const setLectureListForStudent = async () => {
+  lectureListForStudent.value = await LectureRepository.getStudentLectureList(1);
+};
+
+setLectureListForStudent();
+
+const displayLecture = (dateData: DateData, period: number) => {
+  return lectureListForStudent.value.find((lecture) => {
+    const matchDate = lecture.studentLecture.registerDate === `${dateData.year}-${dateData.month}-${dateData.day}`;
+
+    return lecture.studentLecture.period === period && matchDate;
+  })?.lecture.title;
 };
 </script>
 

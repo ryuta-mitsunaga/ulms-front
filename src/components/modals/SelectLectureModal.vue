@@ -10,7 +10,9 @@
               <div>{{ lecture.title }}</div>
               <div>
                 <button class="btn btn-primary btn-sm" @click="showDetail(lecture)">詳細</button>
-                <button class="ms-1 btn btn-success btn-sm" data-bs-dismiss="modal">登録</button>
+                <button class="ms-1 btn btn-success btn-sm" @click="registerLecture(lecture)" data-bs-dismiss="modal">
+                  登録
+                </button>
               </div>
             </div>
             <hr />
@@ -27,7 +29,7 @@
 
 <script setup lang="ts">
 import DefaultModal from './DefaultModal.vue';
-import { Lecture, LectureListResponse } from '../../apis/LectureRepository';
+import LectureRepository, { Lecture, LectureListResponse } from '../../apis/LectureRepository';
 import { toMMDD } from '../../utils/toDateString';
 import { computed, ref } from 'vue';
 import LectureDetail from '../LectureDetail.vue';
@@ -38,18 +40,28 @@ const props = defineProps<{
   lectureList: LectureListResponse;
 }>();
 
+const emit = defineEmits(['registered']);
+
 const showDetail = (lecture: Lecture) => {
   selectingLecture.value = lecture;
 };
 
 const title = computed(() => selectingLecture.value?.title ?? `${toMMDD(props.weekDate)} ${props.period}限`);
 
-const emit = defineEmits(['selectLecture']);
-
 const selectingLecture = ref<Lecture | null>(null);
 
 const close = () => {
   selectingLecture.value = null;
+};
+
+const registerLecture = async (lecture: Lecture, studentId: number = 1) => {
+  const request = {
+    registerDate: `${props.weekDate.year}-${props.weekDate.month}-${props.weekDate.day}`,
+    period: props.period,
+  };
+  await LectureRepository.registerStudentLecture(studentId, lecture.id, request);
+
+  emit('registered');
 };
 </script>
 

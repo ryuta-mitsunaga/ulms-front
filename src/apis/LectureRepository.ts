@@ -21,6 +21,31 @@ const getLectureList = async () => {
   return await ApiFetch<LectureListResponse>('get', '/api/lectureList');
 };
 
+export type StudentLectureRequest = {
+  registerDate: string;
+  period: number;
+};
+const registerStudentLecture = async (studentId: number, lectureId: number, request: StudentLectureRequest) => {
+  return await ApiFetch<void>('post', `/api/student/${studentId}/lecture/${lectureId}`, request);
+};
+
+type StudentLecture = {
+  id: number;
+  lectureId: number;
+  studentId: number;
+  registerDate: string;
+  period: number;
+};
+export type StudentLectureListResponse = {
+  studentLecture: StudentLecture;
+  lecture: Lecture;
+}[];
+const getStudentLectureList = async (studentId: number) => {
+  return await ApiFetch<StudentLectureListResponse>('get', `/api/student/${studentId}/lecture`);
+};
+
 export default {
   getLectureList,
+  registerStudentLecture,
+  getStudentLectureList,
 };
