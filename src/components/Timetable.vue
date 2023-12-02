@@ -14,7 +14,7 @@
         <i @click="changeWeek()" class="bi bi-caret-right-fill pointer"></i>
       </div>
     </div>
-    <table class="table table-bordered">
+    <table class="shadow table table-bordered">
       <thead class="table-light">
         <tr>
           <th />
@@ -29,7 +29,7 @@
             v-for="dateData in dateDataList"
             @click="openSelectLectureModal(dateData, period)"
           >
-            {{ displayLecture(dateData, period) }}
+            {{ displayLecture(dateData, period)?.lecture.title || '' }}
           </td>
         </tr>
       </tbody>
@@ -41,6 +41,7 @@
     :week-date="selectingDateData"
     :period="selectingPeriod"
     :lecture-list="lectureList"
+    :registering-lecture="registeringLecture"
     @registered="setLectureListForStudent"
   />
 </template>
@@ -52,7 +53,7 @@ import { computed, ref } from 'vue';
 import { getJpNameOfWeek } from '../utils/getJpNameOfWeek';
 import { useLectureList } from '../composables/useLectureList';
 import LectureRepository, { LectureListResponse, StudentLectureListResponse } from '../apis/LectureRepository';
-import { toMMDD } from '../utils/toDateString';
+import { paddingToZero, toMMDD } from '../utils/toDateString';
 import { getModalElement } from '../utils/modal';
 
 const periods = 5;
@@ -71,6 +72,8 @@ const selectingDateData = ref<DateData | null>(null);
 const selectingPeriod = ref<number>(1);
 const lectureList = ref<LectureListResponse>([]);
 
+const registeringLecture = ref<StudentLectureListResponse[number] | undefined>();
+/** 講義選択モーダルを開く */
 const openSelectLectureModal = async (dateData: DateData, period: number) => {
   selectingDateData.value = dateData;
   selectingPeriod.value = period;
@@ -79,6 +82,8 @@ const openSelectLectureModal = async (dateData: DateData, period: number) => {
   await composable.setLectureList();
 
   lectureList.value = composable.lectureList.value;
+
+  registeringLecture.value = displayLecture(dateData, period);
 
   setSelectLectureModal();
 
@@ -98,8 +103,8 @@ const dateDataList = computed(() => {
     date.setDate(date.getDate() - date.getDay() + i + 1 + currentMon.value);
 
     const year = date.getFullYear();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
+    const month = paddingToZero(date.getMonth() + 1);
+    const day = paddingToZero(date.getDate());
     const dayOfWeek = date.getDay();
 
     const jpWeek = getJpNameOfWeek(date);
@@ -140,7 +145,7 @@ const displayLecture = (dateData: DateData, period: number) => {
     const matchDate = lecture.studentLecture.registerDate === `${dateData.year}-${dateData.month}-${dateData.day}`;
 
     return lecture.studentLecture.period === period && matchDate;
-  })?.lecture.title;
+  });
 };
 </script>
 

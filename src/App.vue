@@ -2,6 +2,7 @@
   <header>
     <global-header />
   </header>
+  <div id="liveAlertPlaceholder" />
   <router-view class="p-5" />
 </template>
 

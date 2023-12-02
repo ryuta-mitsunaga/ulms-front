@@ -1,4 +1,4 @@
-import { onMounted, ref } from 'vue';
+import { ref } from 'vue';
 import LectureRepository, { LectureListResponse } from '../apis/LectureRepository';
 
 export const useLectureList = () => {

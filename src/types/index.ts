@@ -2,8 +2,8 @@ type Week = 'sun' | 'mon' | 'tue' | 'wed' | 'thu' | 'fri' | 'sat';
 
 type DateData = {
   year: number;
-  month: number;
-  day: number;
+  month: string;
+  day: string;
   dayOfWeek: number;
   jpWeek: string;
 };

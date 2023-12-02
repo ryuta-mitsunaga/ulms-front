@@ -6,3 +6,8 @@ export const toMMDD = (dateData: DateData): string => {
 
   return `${month}月${day}日(${jpWeek})`;
 };
+
+/** 0埋め */
+export const paddingToZero = (num: number): string => {
+  return ('0' + num).slice(-2);
+};

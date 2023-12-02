@@ -29,6 +29,10 @@ const registerStudentLecture = async (studentId: number, lectureId: number, requ
   return await ApiFetch<void>('post', `/api/student/${studentId}/lecture/${lectureId}`, request);
 };
 
+const removeStudentLecture = async (studentLectureId: number) => {
+  return await ApiFetch<void>('delete', `/api/studentLecture/${studentLectureId}`);
+};
+
 type StudentLecture = {
   id: number;
   lectureId: number;
@@ -47,5 +51,6 @@ const getStudentLectureList = async (studentId: number) => {
 export default {
   getLectureList,
   registerStudentLecture,
+  removeStudentLecture,
   getStudentLectureList,
 };
