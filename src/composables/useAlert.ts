@@ -1,4 +1,3 @@
-import { Alert } from 'bootstrap';
 import { ref } from 'vue';
 
 export const useAlert = () => {
@@ -8,7 +7,7 @@ export const useAlert = () => {
   type AlertType = 'success' | 'danger' | 'warning' | 'info';
 
   /** アラートを表示する */
-  const showAlert = (message: string, closeTimeMsec: number = 2000, type: AlertType = 'success') => {
+  const showAlert = (message: string, closeTimeMsec: number = 1000, type: AlertType = 'success') => {
     alertMessage.value = message;
     alertType.value = type;
 

@@ -1,9 +1,12 @@
 <template>
-  <header>
+  <header class="position-fixed w-100">
     <global-header />
+    <div id="liveAlertPlaceholder" />
   </header>
-  <div id="liveAlertPlaceholder" />
-  <router-view class="p-5" />
+
+  <body style="min-width: 1200px; max-width: 1200px; margin: 0 auto">
+    <router-view class="px-5" style="padding-top: 100px" />
+  </body>
 </template>
 
 <script setup lang="ts">

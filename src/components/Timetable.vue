@@ -1,35 +1,47 @@
 <template>
   <div>
     {{ dateDataList[0].year }}
-    <div class="d-flex justify-content-between">
-      <div>
-        <i @click="changeWeek(true)" class="bi bi-caret-left-fill pointer"></i>
-      </div>
+    <div>
+      <div class="d-flex justify-content-between">
+        <div>
+          <i @click="changeWeek(true)" class="bi bi-caret-left-fill pointer"></i>
+        </div>
 
-      <div>
-        {{ dateDataStringArray[0] }} ~
-        {{ dateDataStringArray[6] }}
-      </div>
-      <div>
-        <i @click="changeWeek()" class="bi bi-caret-right-fill pointer"></i>
+        <div>
+          {{ dateDataStringArray[0] }} ~
+          {{ dateDataStringArray[6] }}
+        </div>
+        <div>
+          <i @click="changeWeek()" class="bi bi-caret-right-fill pointer"></i>
+        </div>
       </div>
     </div>
     <table class="shadow table table-bordered">
       <thead class="table-light">
         <tr>
           <th />
-          <th v-for="dateDataString in dateDataStringArray" scope="col">{{ dateDataString }}</th>
+          <th v-for="dateDataString in dateDataStringArray" scope="col">
+            <div style="width: 120px">{{ dateDataString }}</div>
+          </th>
         </tr>
       </thead>
       <tbody>
         <tr v-for="period in periods" :key="period">
-          <td style="width: 10%">{{ period + '限' }}</td>
+          <td style="width: 10%" valign="middle" align="center">
+            <div style="width: 50px">{{ period + '限' }}</div>
+          </td>
           <td
             class="pointer table-cell"
             v-for="dateData in dateDataList"
             @click="openSelectLectureModal(dateData, period)"
+            valign="middle"
+            align="center"
           >
-            {{ displayLecture(dateData, period)?.lecture.title || '' }}
+            <TextLabel
+              v-if="displayLecture(dateData, period)"
+              :text="displayLecture(dateData, period)?.lecture.title || ''"
+              :lecture-type="displayLecture(dateData, period)?.lecture.lectureType || 1"
+            />
           </td>
         </tr>
       </tbody>
@@ -55,6 +67,7 @@ import { useLectureList } from '../composables/useLectureList';
 import LectureRepository, { LectureListResponse, StudentLectureListResponse } from '../apis/LectureRepository';
 import { paddingToZero, toMMDD } from '../utils/toDateString';
 import { getModalElement } from '../utils/modal';
+import TextLabel from './TextLabel.vue';
 
 const periods = 5;
 
@@ -100,7 +113,7 @@ const dateDataList = computed(() => {
     const date = new Date();
 
     // 日付を取得
-    date.setDate(date.getDate() - date.getDay() + i + 1 + currentMon.value);
+    date.setDate(date.getDate() - date.getDay() + i + currentMon.value);
 
     const year = date.getFullYear();
     const month = paddingToZero(date.getMonth() + 1);

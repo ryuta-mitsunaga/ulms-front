@@ -1,11 +1,11 @@
 import { ApiFetch } from './ApiFetch';
 
-// 0: 必修 1: 選択必修　2: 自由選択
-export type LectureType = 0 | 1 | 2;
+// 1: 必修 2: 選択必修　3: 自由選択
+export type LectureType = 1 | 2 | 3;
 
 export type Lecture = {
   id: number;
-  lecture_type: [0, 1, 2];
+  lectureType: LectureType;
   title: string;
   description: string;
   monPeriod: number[];
