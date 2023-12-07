@@ -4,7 +4,7 @@
     <div id="liveAlertPlaceholder" />
   </header>
 
-  <body style="min-width: 1200px; max-width: 1200px; margin: 0 auto">
+  <body style="margin: 0 auto">
     <router-view class="px-5" style="padding-top: 100px" />
   </body>
 </template>

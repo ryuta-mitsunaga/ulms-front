@@ -8,4 +8,3 @@ import axios from 'axios';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 createApp(App).use(router).mount('#app');
-axios.defaults.withCredentials = true;

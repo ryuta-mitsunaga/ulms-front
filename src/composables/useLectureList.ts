@@ -4,7 +4,7 @@ import LectureRepository, { LectureListResponse } from '../apis/LectureRepositor
 export const useLectureList = () => {
   const lectureList = ref<LectureListResponse>([]);
 
-  const setLectureList = async () => (lectureList.value = await LectureRepository.getLectureList());
+  const setLectureList = async () => (lectureList.value = (await LectureRepository.getLectureList()) || []);
 
   return { lectureList, setLectureList };
 };

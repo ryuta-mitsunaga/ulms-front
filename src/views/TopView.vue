@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div style="max-width: 1200px; min-width: 900px; margin: auto">
     <div class="d-flex justify-content-between p-2">
       <div>
         <div class="d-flex">
@@ -70,8 +70,8 @@ const isRegister = ref<boolean>(false);
 
 const openLectureListModal = async (_isRegister: boolean) => {
   isRegister.value = _isRegister;
-  lectureList.value = await LectureRepository.getLectureList();
-  lectureListForStudent.value = await LectureRepository.getStudentLectureList(1, termType.value);
+  lectureList.value = (await LectureRepository.getLectureList()) || [];
+  lectureListForStudent.value = (await LectureRepository.getStudentLectureList(termType.value)) || [];
 
   setLectureListModal();
 

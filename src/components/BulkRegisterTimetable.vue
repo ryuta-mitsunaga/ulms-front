@@ -94,7 +94,7 @@ const weeks = dayOfWeekJp.filter((_, index) => index !== 5 && index !== 6);
 /** 生徒が登録した講義リスト */
 const lectureListForStudent = ref<StudentLectureListResponse>([]);
 const setLectureListForStudent = async () => {
-  lectureListForStudent.value = await LectureRepository.getStudentLectureList(1, props.termType);
+  lectureListForStudent.value = (await LectureRepository.getStudentLectureList(props.termType)) || [];
 };
 
 setLectureListForStudent();

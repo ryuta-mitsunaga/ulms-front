@@ -1,17 +1,27 @@
 <template>
-  <div>
+  <div style="width: 500px; margin: auto">
     <div>
       <form @submit.prevent="login">
         <div>
-          <input class="form-control mb-1" v-model="loginInfo.email" type="email" placeholder="メールアドレス" />
-          <input class="form-control" v-model="loginInfo.password" type="password" placeholder="パスワード" />
+          <input
+            class="form-control mb-1"
+            v-model="loginInfo.email"
+            type="email"
+            required
+            placeholder="メールアドレス"
+          />
+          <input
+            class="form-control"
+            v-model="loginInfo.password"
+            type="password"
+            minlength="8"
+            required
+            placeholder="パスワード"
+          />
         </div>
+        <div class="text-danger">{{ validateMessage }}</div>
         <div class="mt-2">
           <button class="btn btn-primary" type="submit">ログイン</button>
-        </div>
-
-        <div class="mt-1">
-          <router-link to="/changePassword">パスワード変更</router-link>
         </div>
       </form>
     </div>
@@ -19,9 +29,9 @@
 </template>
 
 <script setup lang="ts">
-import router from '../router';
 import LoginRepository, { LoginRequest } from '../apis/LoginRepository';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
+import router from '../router';
 
 const loginInfo = reactive<LoginRequest>({
   email: '',
@@ -29,9 +39,15 @@ const loginInfo = reactive<LoginRequest>({
 });
 
 /** ログイン処理 */
+const validateMessage = ref('');
 const login = async () => {
-  const response = await LoginRepository.login(loginInfo);
+  validateMessage.value = '';
 
-  if (String(response.statusCode) === '200') router.push('/');
+  const errorMessage = await LoginRepository.login(loginInfo);
+
+  if (errorMessage) return (validateMessage.value = errorMessage);
+
+  // ログイン後にトップ画面に遷移
+  router.push('/');
 };
 </script>

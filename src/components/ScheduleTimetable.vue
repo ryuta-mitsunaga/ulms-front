@@ -153,7 +153,7 @@ const changeWeek = (isBack: boolean = false) => {
 /** 生徒が登録した講義リスト */
 const lectureListForStudent = ref<StudentLectureListResponse>([]);
 const setLectureListForStudent = async () => {
-  lectureListForStudent.value = await LectureRepository.getStudentLectureList(1, 2);
+  lectureListForStudent.value = (await LectureRepository.getStudentLectureList(2)) || [];
 };
 
 setLectureListForStudent();

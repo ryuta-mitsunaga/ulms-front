@@ -162,10 +162,10 @@ const close = () => {
 
 const alertComposable = useAlert();
 
-const registerLecture = async (lecture: Lecture, studentId: number = 1) => {
+const registerLecture = async (lecture: Lecture) => {
   if (props.termType) {
     // 前期後期で登録する
-    await LectureRepository.bulkRegisterStudentLecture(studentId, lecture.id, props.termType);
+    await LectureRepository.bulkRegisterStudentLecture(lecture.id, props.termType);
     alertComposable.showAlert('授業を登録しました');
 
     emit('registered');
@@ -177,7 +177,7 @@ const registerLecture = async (lecture: Lecture, studentId: number = 1) => {
       // week: props.weekDate.dayOfWeek,
       period: props.period,
     };
-    await LectureRepository.registerStudentLecture(studentId, lecture.id, request);
+    await LectureRepository.registerStudentLecture(lecture.id, request);
   }
 
   alertComposable.showAlert('授業を登録しました');

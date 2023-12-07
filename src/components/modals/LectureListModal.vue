@@ -91,9 +91,9 @@ const sortedLectureList = computed(() => {
 
 const alertComposable = useAlert();
 
-const registerLecture = async (lecture: Lecture, studentId: number = 1) => {
+const registerLecture = async (lecture: Lecture) => {
   // 前期後期で登録する
-  await LectureRepository.bulkRegisterStudentLecture(studentId, lecture.id, props.termType);
+  await LectureRepository.bulkRegisterStudentLecture(lecture.id, props.termType);
   alertComposable.showAlert('授業を登録しました');
 
   emit('registered');
