@@ -18,7 +18,7 @@ export const ApiFetch = async <T>(method: Method, url: string, requestBody?: unk
   if (token || !hasToken) {
     Object.assign(config, { headers });
   } else {
-    useAlert().showAlert('タイムアウトしました', 2000, 'danger');
+    useAlert().showAlert('ログインしてください', 2000, 'danger');
     router.push('login');
   }
 
