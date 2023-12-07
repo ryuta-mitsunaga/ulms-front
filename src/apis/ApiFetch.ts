@@ -27,7 +27,7 @@ export const ApiFetch = async <T>(method: Method, url: string, requestBody?: unk
     withXSRFToken: true,
   });
 
-  const response = await axiosPost(config).catch((error) => {});
+  const response = await axiosPost(config);
 
   return response ? (response.data as T) : null;
 };
