@@ -36,60 +36,83 @@
           </div>
 
           <div class="mb-3">
-            <h5 class="text-success fw-bold">選択可能講義</h5>
-
-            <div class="text-success fw-bold">必修</div>
-            <div v-for="lecture in sortedLectureList.required" :key="lecture.id">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="pointer" @click="showDetail(lecture)">{{ lecture.title }}</div>
-                <div>
-                  <button class="ms-1 btn btn-success btn-sm" @click="registerLecture(lecture)" data-bs-dismiss="modal">
-                    登録
-                  </button>
+            <h5 class="text-success fw-bold">登録可能講義</h5>
+            <div
+              v-if="
+                sortedLectureList.free.length ||
+                sortedLectureList.required.length ||
+                sortedLectureList.selectRequired.length
+              "
+            >
+              <div v-if="sortedLectureList.required.length > 0">
+                <div class="text-success fw-bold">必修</div>
+                <div v-for="lecture in sortedLectureList.required" :key="lecture.id">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="pointer" @click="showDetail(lecture)">{{ lecture.title }}</div>
+                    <div>
+                      <button
+                        class="ms-1 btn btn-success btn-sm"
+                        @click="registerLecture(lecture)"
+                        data-bs-dismiss="modal"
+                      >
+                        登録
+                      </button>
+                    </div>
+                  </div>
+                  <hr class="p-0" />
                 </div>
               </div>
-              <hr class="p-0" />
-            </div>
-          </div>
 
-          <div class="mb-3">
-            <div class="text-primary fw-bold">選択必修</div>
+              <div v-if="sortedLectureList.selectRequired.length > 0" class="mb-3">
+                <div class="text-primary fw-bold">選択必修</div>
 
-            <div v-for="lecture in sortedLectureList.selectRequired" :key="lecture.id">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="pointer" @click="showDetail(lecture)">{{ lecture.title }}</div>
-                <div>
-                  <button class="ms-1 btn btn-success btn-sm" @click="registerLecture(lecture)" data-bs-dismiss="modal">
-                    登録
-                  </button>
+                <div v-for="lecture in sortedLectureList.selectRequired" :key="lecture.id">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="pointer" @click="showDetail(lecture)">{{ lecture.title }}</div>
+                    <div>
+                      <button
+                        class="ms-1 btn btn-success btn-sm"
+                        @click="registerLecture(lecture)"
+                        data-bs-dismiss="modal"
+                      >
+                        登録
+                      </button>
+                    </div>
+                  </div>
+                  <hr class="p-0" />
                 </div>
               </div>
-              <hr class="p-0" />
-            </div>
-          </div>
 
-          <div class="mb-3">
-            <div class="text-secondary fw-bold">自由選択</div>
+              <div v-if="sortedLectureList.free.length > 0" class="mb-3">
+                <div class="text-secondary fw-bold">自由選択</div>
 
-            <div v-for="lecture in sortedLectureList.free" :key="lecture.id">
-              <div class="d-flex justify-content-between align-items-center">
-                <div class="pointer" @click="showDetail(lecture)">{{ lecture.title }}</div>
-                <div>
-                  <button class="ms-1 btn btn-success btn-sm" @click="registerLecture(lecture)" data-bs-dismiss="modal">
-                    登録
-                  </button>
+                <div v-for="lecture in sortedLectureList.free" :key="lecture.id">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="pointer" @click="showDetail(lecture)">{{ lecture.title }}</div>
+                    <div>
+                      <button
+                        class="ms-1 btn btn-success btn-sm"
+                        @click="registerLecture(lecture)"
+                        data-bs-dismiss="modal"
+                      >
+                        登録
+                      </button>
+                    </div>
+                  </div>
+                  <hr class="p-0" />
                 </div>
               </div>
-              <hr class="p-0" />
             </div>
+            <div v-else>対象なし</div>
           </div>
         </div>
       </template>
       <template v-slot:footer>
         <button class="btn btn-secondary" @click="selectingLecture = null">戻る</button>
       </template>
+
+      <LectureDetail v-if="selectingLecture" :lecture="selectingLecture" />
     </DefaultModal>
-    <LectureDetailModal :lecture="selectingLecture" />
   </div>
 </template>
 
@@ -101,16 +124,19 @@ import LectureRepository, {
   StudentLectureListResponse,
 } from '../../apis/LectureRepository';
 import { toMMDD } from '../../utils/toDateString';
-import { computed, inject, ref } from 'vue';
+import { computed, ref } from 'vue';
 import LectureDetail from '../LectureDetail.vue';
 import { useAlert } from '../../composables/useAlert';
 import TextLabel from '../TextLabel.vue';
+import { dayOfWeekJp } from '../../utils/getJpNameOfWeek';
 
 const props = defineProps<{
-  weekDate: DateData;
+  weekDate?: DateData;
+  weekIndex?: number;
   period: number;
   lectureList: LectureListResponse;
   registeringLecture: StudentLectureListResponse[number] | undefined;
+  termType?: TermType;
 }>();
 
 const emit = defineEmits(['registered']);
@@ -119,7 +145,14 @@ const showDetail = (lecture: Lecture) => {
   selectingLecture.value = lecture;
 };
 
-const title = computed(() => selectingLecture.value?.title ?? `${toMMDD(props.weekDate)} ${props.period}限`);
+const title = computed(() => {
+  let text = selectingLecture.value?.title || '';
+
+  if (props.weekDate) text = `${toMMDD(props.weekDate)} ${props.period}限 ${text}`;
+  if (props.weekIndex !== undefined) text = `${dayOfWeekJp[props.weekIndex]}曜日 ${props.period}限 ${text}`;
+
+  return text;
+});
 
 const selectingLecture = ref<Lecture | null>(null);
 
@@ -130,11 +163,23 @@ const close = () => {
 const alertComposable = useAlert();
 
 const registerLecture = async (lecture: Lecture, studentId: number = 1) => {
-  const request = {
-    registerDate: `${props.weekDate.year}-${props.weekDate.month}-${props.weekDate.day}`,
-    period: props.period,
-  };
-  await LectureRepository.registerStudentLecture(studentId, lecture.id, request);
+  if (props.termType) {
+    // 前期後期で登録する
+    await LectureRepository.bulkRegisterStudentLecture(studentId, lecture.id, props.termType);
+    alertComposable.showAlert('授業を登録しました');
+
+    emit('registered');
+    return;
+  } else {
+    // １日ごとに登録する
+    const request = {
+      registerDate: `${props.weekDate?.year}-${props.weekDate?.month}-${props.weekDate?.day}`,
+      // week: props.weekDate.dayOfWeek,
+      period: props.period,
+    };
+    await LectureRepository.registerStudentLecture(studentId, lecture.id, request);
+  }
+
   alertComposable.showAlert('授業を登録しました');
 
   emit('registered');
@@ -162,6 +207,10 @@ const lectureTypeText = computed(() => {
 
 const filteredLectureList = computed(() => {
   return props.lectureList.filter((lecture) => {
+    // 登録中の講義は表示しない
+    if (lecture.id === props.registeringLecture?.lecture.id) return;
+
+    const weekIndex = props.weekIndex || props.weekDate?.dayOfWeek || 0;
     const lectureSchedule = [
       lecture.monPeriod,
       lecture.tuePeriod,
@@ -172,7 +221,7 @@ const filteredLectureList = computed(() => {
       lecture.sunPeriod,
     ];
 
-    return lectureSchedule[props.weekDate.dayOfWeek].some((period) => period === props.period);
+    return lectureSchedule[weekIndex].some((period) => period === props.period);
   });
 });
 
@@ -188,5 +237,3 @@ const sortedLectureList = computed(() => {
   };
 });
 </script>
-
-<style scoped></style>

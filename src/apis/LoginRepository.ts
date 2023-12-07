@@ -13,7 +13,19 @@ const logout = async () => {
   await ApiFetch<void>('post', '/api/logout');
 };
 
+type Student = {
+  id: number;
+  name_sei: string;
+  name_mei: string;
+  email: string;
+  password: string;
+};
+const getStudent = async (studentId: number) => {
+  return await ApiFetch<Student>('get', `/api/student/${studentId}`);
+};
+
 export default {
   login,
   logout,
+  getStudent,
 };

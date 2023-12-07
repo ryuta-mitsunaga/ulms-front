@@ -6,6 +6,7 @@ type DateData = {
   day: string;
   dayOfWeek: number;
   jpWeek: string;
+  isPast: boolean;
 };
 
 // Path: src/types/bootstrap.ts
@@ -23,3 +24,9 @@ type ColorInBootstrap =
   | 'white'
   | 'black-50'
   | 'white-50';
+
+/**
+ * 1: 前期
+ * 2: 後期
+ */
+type TermType = 1 | 2;

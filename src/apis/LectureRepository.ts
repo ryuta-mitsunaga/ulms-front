@@ -29,6 +29,10 @@ const registerStudentLecture = async (studentId: number, lectureId: number, requ
   return await ApiFetch<void>('post', `/api/student/${studentId}/lecture/${lectureId}`, request);
 };
 
+const bulkRegisterStudentLecture = async (studentId: number, lectureId: number, termType: TermType) => {
+  return await ApiFetch<void>('post', `/api/student/${studentId}/lecture/${lectureId}/bulk?term_type=${termType}`);
+};
+
 const removeStudentLecture = async (studentLectureId: number) => {
   return await ApiFetch<void>('delete', `/api/studentLecture/${studentLectureId}`);
 };
@@ -39,13 +43,23 @@ type StudentLecture = {
   studentId: number;
   registerDate: string;
   period: number;
+  termType: TermType;
 };
 export type StudentLectureListResponse = {
   studentLecture: StudentLecture;
   lecture: Lecture;
 }[];
-const getStudentLectureList = async (studentId: number) => {
-  return await ApiFetch<StudentLectureListResponse>('get', `/api/student/${studentId}/lecture`);
+const getStudentLectureList = async (studentId: number, termType: TermType) => {
+  return await ApiFetch<StudentLectureListResponse>('get', `/api/student/${studentId}/lecture?term_type=${termType}`);
+};
+
+type lectureAggregation = {
+  studentId: number;
+  attendanceCount: number;
+} & { lecture: Lecture };
+export type LectureAggregationResponse = lectureAggregation[];
+export const getLectureAggregation = async (studentId: number) => {
+  return await ApiFetch<LectureAggregationResponse>('get', `/api/student/${studentId}/lectureAggregation`);
 };
 
 export default {
@@ -53,4 +67,5 @@ export default {
   registerStudentLecture,
   removeStudentLecture,
   getStudentLectureList,
+  bulkRegisterStudentLecture,
 };

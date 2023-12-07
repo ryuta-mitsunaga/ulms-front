@@ -31,11 +31,12 @@
             <div style="width: 50px">{{ period + '限' }}</div>
           </td>
           <td
-            class="pointer table-cell"
+            class="table-cell"
             v-for="dateData in dateDataList"
             @click="openSelectLectureModal(dateData, period)"
             valign="middle"
             align="center"
+            :class="periodClasses(dateData.isPast)"
           >
             <TextLabel
               v-if="displayLecture(dateData, period)"
@@ -69,8 +70,6 @@ import { paddingToZero, toMMDD } from '../utils/toDateString';
 import { getModalElement } from '../utils/modal';
 import TextLabel from './TextLabel.vue';
 
-const periods = 5;
-
 const selectLectureModal = ref<Modal | null>(null);
 
 const setSelectLectureModal = () => {
@@ -88,6 +87,9 @@ const lectureList = ref<LectureListResponse>([]);
 const registeringLecture = ref<StudentLectureListResponse[number] | undefined>();
 /** 講義選択モーダルを開く */
 const openSelectLectureModal = async (dateData: DateData, period: number) => {
+  // 今日以前の日付は選択不可
+  if (dateData.isPast) return;
+
   selectingDateData.value = dateData;
   selectingPeriod.value = period;
 
@@ -99,7 +101,6 @@ const openSelectLectureModal = async (dateData: DateData, period: number) => {
   registeringLecture.value = displayLecture(dateData, period);
 
   setSelectLectureModal();
-
   selectLectureModal.value?.show();
 };
 
@@ -110,10 +111,13 @@ const dateDataList = computed(() => {
   const dateData: DateData[] = [];
 
   for (let i = 0; i < 7; i++) {
-    const date = new Date();
+    let index = i;
+
+    const nowDate = new Date();
 
     // 日付を取得
-    date.setDate(date.getDate() - date.getDay() + i + currentMon.value);
+    const date = new Date();
+    date.setDate(date.getDate() - date.getDay() + index + 1 + currentMon.value);
 
     const year = date.getFullYear();
     const month = paddingToZero(date.getMonth() + 1);
@@ -128,6 +132,7 @@ const dateDataList = computed(() => {
       day,
       dayOfWeek,
       jpWeek,
+      isPast: nowDate >= date, // 今日以前か
     });
   }
 
@@ -148,7 +153,7 @@ const changeWeek = (isBack: boolean = false) => {
 /** 生徒が登録した講義リスト */
 const lectureListForStudent = ref<StudentLectureListResponse>([]);
 const setLectureListForStudent = async () => {
-  lectureListForStudent.value = await LectureRepository.getStudentLectureList(1);
+  lectureListForStudent.value = await LectureRepository.getStudentLectureList(1, 2);
 };
 
 setLectureListForStudent();
@@ -160,6 +165,13 @@ const displayLecture = (dateData: DateData, period: number) => {
     return lecture.studentLecture.period === period && matchDate;
   });
 };
+
+const periods = 5;
+
+const periodClasses = (isPast: boolean) => ({
+  'bg-light': isPast,
+  pointer: !isPast,
+});
 </script>
 
 <style scoped>
