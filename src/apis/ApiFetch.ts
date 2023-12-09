@@ -1,6 +1,5 @@
 import axios, { Method } from 'axios';
 import router from '../router';
-import { useAlert } from '../composables/useAlert';
 
 export const ApiFetch = async <T>(method: Method, url: string, requestBody?: unknown, hasToken: boolean = true) => {
   const token = localStorage.getItem('token');
@@ -18,7 +17,6 @@ export const ApiFetch = async <T>(method: Method, url: string, requestBody?: unk
   if (token || !hasToken) {
     Object.assign(config, { headers });
   } else {
-    useAlert().showAlert('ログインしてください', 2000, 'danger');
     router.push('login');
   }
 
