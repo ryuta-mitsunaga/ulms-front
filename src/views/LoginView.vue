@@ -1,5 +1,5 @@
 <template>
-  <div style="width: 500px; margin: auto">
+  <div style="width: 300px; margin: auto">
     <div>
       <form @submit.prevent="login">
         <div>
